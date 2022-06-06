@@ -24,8 +24,8 @@ class Chat:
     def remove_chat(self, chat_id):
         if not self.check_chat(chat_id):
             return False
-        self.chat.delete_one({"chat_id": chat_id})
-        return True
+        return self.chat.delete_one({"chat_id": chat_id})
+
 
     def get_chats(self):
         return self.chat.find()

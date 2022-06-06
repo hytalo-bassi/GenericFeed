@@ -1,7 +1,9 @@
 from pyrogram import Client, filters
 from pyrogram.types import (
-        Message, CallbackQuery,
-        InlineKeyboardButton, InlineKeyboardMarkup
+    Message,
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
 )
 from typing import Union
 from GenericFeed.chat import Chat
@@ -15,7 +17,16 @@ async def add_chat(client: Client, message: Message):
         await message.reply_text("Chat already added")
         return
 
-    chat_manager.add_chat(message.chat.id, message.chat.title)
+    split_message = message.text.split(" ")
+    if len(split_message) > 1:
+        chat_info = await client.get_chat(split_message[1])
+        chat_id = chat_info.id
+        chat_name = chat_info.title or chat_info.first_name
+    else:
+        chat_id = message.chat.id
+        chat_name = message.chat.title or message.chat.first_name
+
+    chat_manager.add_chat(chat_id, chat_name)
     await message.reply_text("Chat added")
 
 
@@ -26,8 +37,22 @@ async def remove_chat(client: Client, message: Message):
         await message.reply_text("Chat not found")
         return
 
-    chat_manager.remove_chat(message.chat.id)
-    await message.reply_text("Chat removed")
+    button_list = []
+    for chat_item in chat_manager.get_chats():
+        button_list.append(
+            InlineKeyboardButton(
+                chat_item["chat_name"],
+                callback_data=f"removechat|{chat_item['chat_id']}",
+            )
+        )
+
+    reply_markup = InlineKeyboardMarkup(
+        [button_list[i:i + 2] for i in range(0, len(button_list), 2)]
+    )
+
+    await message.reply_text(
+        "Select chat to remove", reply_markup=reply_markup
+    )
 
 
 @Client.on_callback_query(filters.regex("listchats_back") & is_sudoer)  # listchats_back
@@ -45,24 +70,31 @@ async def list_chats(client: Client, union: Union[Message, CallbackQuery]):
     for chat in chats:
         buttons.append(
             InlineKeyboardButton(
-                chat['chat_name'],
-                callback_data="viewchat|" + str(chat['chat_id'])
+                chat["chat_name"], callback_data="viewchat|" + str(chat["chat_id"])
             )
         )
 
     reply_markup = InlineKeyboardMarkup(
-        [buttons[i:i+1] for i in range(0, len(buttons), 1)]
+        [buttons[i : i + 1] for i in range(0, len(buttons), 1)]
     )
     if is_callback:
-        await union.message.edit_text(
-            "Chats found:",
-            reply_markup=reply_markup
-        )
+        await union.message.edit_text("Chats found:", reply_markup=reply_markup)
     else:
-        await union.reply_text(
-            "Chats found:",
-            reply_markup=reply_markup
-        )
+        await union.reply_text("Chats found:", reply_markup=reply_markup)
+
+
+@Client.on_callback_query(filters.regex("removechat") & is_sudoer)  # remove_chat
+async def remove_chat_callback(client: Client, callback: CallbackQuery):
+    chat_manager = Chat()
+    chat_id = callback.data.split("|")[1]
+    deleted_chat_info = await client.get_chat(
+        chat_id=chat_id,
+    )
+    chat_manager.remove_chat(chat_id)
+    chat_name = deleted_chat_info.title or deleted_chat_info.first_name
+
+    await callback.message.edit_text(
+        f"{chat_name} removed")
 
 
 @Client.on_callback_query(filters.regex("viewchat") & is_sudoer)  # viewchat
@@ -83,11 +115,7 @@ async def view_chat(client: Client, callback_query: CallbackQuery):
         "Chat description: " + chat_info.description + "\n"
         f"Chat invite link: {chat_info.invite_link or None}\n"
     )
-    back_button = InlineKeyboardButton(
-        "Back",
-        callback_data="listchats_back"
-    )
+    back_button = InlineKeyboardButton("Back", callback_data="listchats_back")
     await callback_query.message.edit_text(
-        chat_info_text,
-        reply_markup=InlineKeyboardMarkup([[back_button]])
+        chat_info_text, reply_markup=InlineKeyboardMarkup([[back_button]])
     )
