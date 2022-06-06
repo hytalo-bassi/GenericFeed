@@ -1,5 +1,6 @@
 import asyncio
 import feedparser
+
 from pyrogram import Client
 from pyrogram.errors import (
     ChatIdInvalid,
@@ -9,16 +10,25 @@ from pyrogram.errors import (
     UserIsBot,
 )
 
-from GenericFeed.config import BOT_TOKEN, API_ID, API_HASH, FEED_FORMATTER_TEMPLATE
+from GenericFeed.config import (
+    BOT_TOKEN, API_ID, API_HASH,
+    FEED_FORMATTER_TEMPLATE
+)
 from GenericFeed.feed import Feed
 from GenericFeed.chat import Chat
+from GenericFeed.loop import LoopController
 
 
 async def StartFeedLoop(bot: Client):
     feed = Feed()
+    loop = LoopController()
     while True:
         feed_items = feed.get_feeds()  # Get feeds from the DB
         for item in feed_items:
+            status = loop.get_loop_status()
+            if status is False:
+                await asyncio.sleep(60)
+                continue
             print("-+-" * 20)
             feed_url = item["url"]
             print(f"[+] Feed URL: {feed_url}")
