@@ -13,14 +13,10 @@ OWNER_ID: int = None
 DEV_LIST: list = []
 DEV_LIST.append(OWNER_ID)
 
-CHAT_LIST: list = [
-    -1001783751625,
-]
-
-FEED_FORMATTER_TEMPLATE: str = """
-<a href="{url}">{title}</a> | {feed_title}
-
-<i>{summary}</i>
-@TiFu_News
-
+FEED_FORMATTER_TEMPLATE: str = """    
+<b>{title}</b>    
+      
+<i>{summary}</i>    
+      
+Via <a href={url}>{feed_title}</a>    
 """

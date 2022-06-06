@@ -1,5 +1,6 @@
 import feedparser
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 from GenericFeed.config import MONGODB_URI
 
 
@@ -27,18 +28,18 @@ class Feed:
             self.collection.insert_one(input_data)
             return True
 
-    def remove_feed(self, url):
-        if self.check_feed(url):
-            self.collection.delete_one({'url': url})
-            return True
+    def remove_feed(self, id: str):
+        deleted = self.collection.find_one_and_delete({'_id': ObjectId(id)})
+        if deleted:
+            return deleted
         else:
             return False
 
     def get_feeds(self):
-        return self.collection.find({}, {'_id': 0})
+        return self.collection.find()
 
-    def get_feed(self, url):
-        return self.collection.find_one({'url': url}, {'_id': 0})
+    def get_feed(self, id: str):
+        return self.collection.find_one({'_id': ObjectId(id)}, {'_id': 0})
 
     def update_feed(self, url):
         if self.check_feed(url):
@@ -63,4 +64,15 @@ class Feed:
                 else:
                     return False    # No update
         else:
-            return False    # feed not found
+            return False  # feed not found
+    
+
+    def clear_last_update(self, url):
+        if self.check_feed(url):
+            self.collection.update_one(
+                {'url': url},
+                {'$set': {'last_update': None}}
+            )
+            return True
+        else:
+            return False
