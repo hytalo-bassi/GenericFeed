@@ -44,12 +44,10 @@ async def remove_chat(client: Client, message: Message):
         )
 
     reply_markup = InlineKeyboardMarkup(
-        [button_list[i:i + 2] for i in range(0, len(button_list), 2)]
+        [button_list[i : i + 2] for i in range(0, len(button_list), 2)]
     )
 
-    await message.reply_text(
-        "Select chat to remove", reply_markup=reply_markup
-    )
+    await message.reply_text("Select chat to remove", reply_markup=reply_markup)
 
 
 @Client.on_callback_query(filters.regex("listchats_back") & is_sudoer)  # listchats_back
@@ -72,7 +70,7 @@ async def list_chats(client: Client, union: Union[Message, CallbackQuery]):
         )
 
     reply_markup = InlineKeyboardMarkup(
-        [buttons[i:i + 1] for i in range(0, len(buttons), 1)]
+        [buttons[i : i + 1] for i in range(0, len(buttons), 1)]
     )
     if is_callback:
         await union.message.edit_text("Chats found:", reply_markup=reply_markup)
@@ -88,13 +86,9 @@ async def remove_chat_callback(client: Client, callback: CallbackQuery):
     deleted = chat_manager.remove_chat(int(deleted_chat_info.id))
     chat_name = deleted_chat_info.title or deleted_chat_info.first_name
     if deleted:
-        await callback.message.edit_text(
-            f"{chat_name} removed"
-        )
+        await callback.message.edit_text(f"{chat_name} removed")
     else:
-        await callback.message.edit_text(
-            f"{chat_name} not found"
-        )
+        await callback.message.edit_text(f"{chat_name} not found")
 
 
 @Client.on_callback_query(filters.regex("viewchat") & is_sudoer)  # viewchat

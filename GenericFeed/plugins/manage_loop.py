@@ -10,9 +10,7 @@ async def loop_command(client: Client, message: Message):
     args = message.text.split(" ")
     if len(args) == 1:
         status = loop.get_loop_status()
-        await message.reply_text(
-            f"Loop is {'enabled' if status else 'disabled'}"
-        )
+        await message.reply_text(f"Loop is {'enabled' if status else 'disabled'}")
 
     elif len(args) == 2:
         if args[1] == "enable":
@@ -23,6 +21,5 @@ async def loop_command(client: Client, message: Message):
             await message.reply_text("Loop disabled")
         else:
             await message.reply_text(
-                "Invalid argument\n"
-                "Usage: /loop [enable|disable]"
+                "Invalid argument\n" "Usage: /loop [enable|disable]"
             )

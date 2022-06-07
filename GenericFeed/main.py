@@ -8,13 +8,10 @@ from pyrogram.errors import (
     ChannelPrivate,
     UserIsBlocked,
     UserIsBot,
-    MessageTooLong
+    MessageTooLong,
 )
 
-from GenericFeed.config import (
-    BOT_TOKEN, API_ID, API_HASH,
-    FEED_FORMATTER_TEMPLATE
-)
+from GenericFeed.config import BOT_TOKEN, API_ID, API_HASH, FEED_FORMATTER_TEMPLATE
 from GenericFeed.feed import Feed
 from GenericFeed.chat import Chat
 from GenericFeed.loop import LoopController
@@ -60,7 +57,7 @@ async def StartFeedLoop(bot: Client):
                                 feed_title=feed_item["feed"]["title"],
                                 title=feed_item.entries[0].title,
                                 url=feed_item.entries[0].link,
-                                summary=text_content  # Personal choice xD
+                                summary=text_content,  # Personal choice xD
                             ),
                         )
                     except (
@@ -89,7 +86,9 @@ async def StartFeedLoop(bot: Client):
                         )
 
                     except Exception as e:
-                        print(f" [!] Error sending message to {chat['chat_name']} | {chat['chat_id']}")
+                        print(
+                            f" [!] Error sending message to {chat['chat_name']} | {chat['chat_id']}"
+                        )
                         print(f" [!] Feed URL: {feed_url}")
                         print(f" [!] Error: {e}")
         print("═" * 70)
