@@ -1,6 +1,6 @@
 import asyncio
+import aiohttp
 import feedparser
-
 from pyrogram import Client
 from pyrogram.errors import (
     ChatIdInvalid,
@@ -11,7 +11,12 @@ from pyrogram.errors import (
     MessageTooLong,
 )
 
-from GenericFeed.config import BOT_TOKEN, API_ID, API_HASH, FEED_FORMATTER_TEMPLATE
+from GenericFeed.config import (
+    BOT_TOKEN,
+    API_ID,
+    API_HASH,
+    FEED_FORMATTER_TEMPLATE
+)
 from GenericFeed.feed import Feed
 from GenericFeed.chat import Chat
 from GenericFeed.loop import LoopController
@@ -22,7 +27,7 @@ async def StartFeedLoop(bot: Client):
     loop = LoopController()
     print("═" * 70)
     while True:
-        feed_items = feed.get_feeds()  # Get feeds from the DB
+        feed_items = feed.get_feeds()
         for item in feed_items:
             status = loop.get_loop_status()
             if status is False:
@@ -31,67 +36,35 @@ async def StartFeedLoop(bot: Client):
 
             feed_url = item["url"]
             print(f" [■] Feed URL: {feed_url}")
-            have_update = feed.check_update(feed_url)  # Check if there is an update
+            have_update = feed.check_update(feed_url)
             print(f" [+] Have update: {have_update}")
             if have_update:
                 try:
-                    feed.update_feed(feed_url)  # Update the feeds
+                    feed.update_feed(feed_url)
                 except IndexError:
                     print(" [!] Error: IndexError")
-                    feed.remove_feed(item["_id"])  # Remove the feed from the DB
+                    feed.remove_feed(item["_id"])
                     continue
-                feed_item = feedparser.parse(feed_url)  # Parse the feed
-                for chat in Chat().get_chats():
 
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(feed_url, timeout=10) as response:
+                        html = await response.text()
+
+                feed_item = feedparser.parse(html)
+                for chat in Chat().get_chats():
                     print(f' [+] Sending to: {chat["chat_name"]} | {chat["chat_id"]}')
                     try:
-                        try:
-                            text_content = feed_item.entries[0].summary
-                        except AttributeError:
-                            try:
-                                text_content = feed_item.entries[0].description
-                            except AttributeError:
-                                text_content = "No description"
-                        await bot.send_message(
-                            chat_id=chat["chat_id"],
-                            text=FEED_FORMATTER_TEMPLATE.format(
-                                feed_title=feed_item["feed"]["title"],
-                                title=feed_item.entries[0].title,
-                                url=feed_item.entries[0].link,
-                                summary=text_content,  # Personal choice xD
-                            ),
-                        )
-                    except (
-                        ChatIdInvalid,
-                        PeerIdInvalid,
-                        ChannelPrivate,
-                        UserIsBlocked,
-                        UserIsBot,
-                    ) as e:
-                        print(
-                            f' [!] Error sending message to {chat["chat_name"]} | {chat["chat_id"]}'
-                        )
-                        print(f" [!] Error: {e}")
-                        print(" [!] Removing chat from DB")
-                        Chat().remove_chat(chat["chat_id"])
+                        await bot.send_feed(chat, feed_item)
                     except MessageTooLong:
-                        await bot.send_message(
-                            chat_id=chat["chat_id"],
-                            text=FEED_FORMATTER_TEMPLATE.format(
-                                feed_title=feed_item["feed"]["title"],
-                                title=feed_item.entries[0].title,
-                                url=feed_item.entries[0].link,
-                                summary=text_content[:200],  # Personal choice xD
-                            ),
-                            parse_mode="HTML",
-                        )
-
-                    except Exception as e:
-                        print(
-                            f" [!] Error sending message to {chat['chat_name']} | {chat['chat_id']}"
-                        )
-                        print(f" [!] Feed URL: {feed_url}")
-                        print(f" [!] Error: {e}")
+                        await bot.send_feed(chat, feed_item, limit=200)
+                    except KeyError:
+                        print(" [!] Error: KeyError")
+                    #except Exception as e:
+                    #    print(
+                    #        f" [!] Error sending message to {chat['chat_name']} | {chat['chat_id']}"
+                    #    )
+                    #    print(f" [!] Feed URL: {feed_url}")
+                    #    print(f" [!] Error: {e}")
         print("═" * 70)
         await asyncio.sleep(60)
 
@@ -110,3 +83,58 @@ class GenericFeed(Client):
     async def start(self):
         await super().start()
         await StartFeedLoop(self)
+
+    async def send_feed(self, chat_info, feed_data, limit: int = None):
+        chat_id = chat_info["chat_id"]
+        last_entry = feed_data["entries"][0]
+        text_content = None
+        image_content = None
+        try:
+            text_content = last_entry.summary
+        except AttributeError:
+            try:
+                text_content = last_entry.description
+            except AttributeError:
+                text_content = "No description"
+        if limit is not None:
+            text_content = text_content[:limit]
+
+        try:
+            image_content = last_entry["media_content"][0]["url"]
+        except Exception:
+            try:
+                image_content = last_entry['image']
+            except Exception:
+                print(" [!] Error: No image found")
+            image_content = None
+
+        formatted_text = FEED_FORMATTER_TEMPLATE.format(
+            feed_title=feed_data["feed"]["title"],
+            title=last_entry.title,
+            url=last_entry.link,
+            summary=text_content,
+        )
+
+        try:
+            if image_content:
+                await self.send_photo(
+                    chat_id=chat_id,
+                    photo=image_content,
+                    caption=formatted_text,
+                )
+            else:
+                await self.send_message(
+                    chat_id=chat_id,
+                    text=formatted_text,
+                )
+        except (
+            ChatIdInvalid,
+            PeerIdInvalid,
+            ChannelPrivate,
+            UserIsBlocked,
+            UserIsBot,
+        ) as e:
+            print(f" [!] Error sending message to {chat_id}")
+            print(f" [!] Error: {e}")
+            print(" [!] Removing chat from DB")
+            Chat().remove_chat(chat_id)
