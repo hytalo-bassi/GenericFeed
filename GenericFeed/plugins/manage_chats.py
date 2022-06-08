@@ -8,6 +8,24 @@ from pyrogram.types import (
 from typing import Union
 from GenericFeed.chat import Chat
 from GenericFeed.utils import is_sudoer
+from GenericFeed.config import HELP
+
+HELP["Manage chats"] = {
+    'addchat': (
+        "Add a chat to the list of managed chats.\n"
+        "Usage: `/addchat (chat_id)?`\n"
+    ),
+    'removechat': (
+        "Remove a chat from the list of managed chats.\n"
+        "Send a message to the chat to remove it from the list of managed chats.\n"
+        "Usage: `/removechat`\n"
+    ),
+    'listchats': (
+        "List all managed chats.\n"
+        "Send the list of managed chats to the chat.\n"
+        "Usage: `/listchats`\n"
+    )
+}
 
 
 @Client.on_message(filters.command(["addchat"]) & is_sudoer)  # addchat
@@ -50,7 +68,7 @@ async def remove_chat(client: Client, message: Message):
     await message.reply_text("Select chat to remove", reply_markup=reply_markup)
 
 
-@Client.on_callback_query(filters.regex("listchats_back") & is_sudoer)  # listchats_back
+@Client.on_callback_query(filters.regex("^listchats_back") & is_sudoer)  # listchats_back
 @Client.on_message(filters.command(["listchats"]) & is_sudoer)  # listchats
 async def list_chats(client: Client, union: Union[Message, CallbackQuery]):
     chat_manager = Chat()
@@ -78,7 +96,7 @@ async def list_chats(client: Client, union: Union[Message, CallbackQuery]):
         await union.reply_text("Chats found:", reply_markup=reply_markup)
 
 
-@Client.on_callback_query(filters.regex("removechat") & is_sudoer)  # remove_chat
+@Client.on_callback_query(filters.regex("^removechat") & is_sudoer)  # remove_chat
 async def remove_chat_callback(client: Client, callback: CallbackQuery):
     chat_manager = Chat()
     chat_id = callback.data.split("|")[1]
@@ -91,7 +109,7 @@ async def remove_chat_callback(client: Client, callback: CallbackQuery):
         await callback.message.edit_text(f"{chat_name} not found")
 
 
-@Client.on_callback_query(filters.regex("viewchat") & is_sudoer)  # viewchat
+@Client.on_callback_query(filters.regex("^viewchat") & is_sudoer)  # viewchat
 async def view_chat(client: Client, callback_query: CallbackQuery):
     chat_manager = Chat()
     data, chat_id = callback_query.data.split("|")

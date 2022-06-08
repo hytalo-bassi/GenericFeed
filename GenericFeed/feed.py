@@ -54,10 +54,13 @@ class Feed:
             if last_update is None:
                 return True
             else:
-                if feed.entries[0].link != last_update:
-                    return True  # new update
-                else:
-                    return False  # No update
+                try:
+                    if feed.entries[0].link != last_update:
+                        return True  # new update
+                    else:
+                        return False  # No update
+                except AttributeError:
+                    return False
         else:
             return False  # feed not found
 

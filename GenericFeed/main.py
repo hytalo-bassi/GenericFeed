@@ -26,7 +26,7 @@ async def StartFeedLoop(bot: Client):
         for item in feed_items:
             status = loop.get_loop_status()
             if status is False:
-                await asyncio.sleep(60)
+                await asyncio.sleep(10)
                 continue
 
             feed_url = item["url"]
@@ -42,6 +42,7 @@ async def StartFeedLoop(bot: Client):
                     continue
                 feed_item = feedparser.parse(feed_url)  # Parse the feed
                 for chat in Chat().get_chats():
+
                     print(f' [+] Sending to: {chat["chat_name"]} | {chat["chat_id"]}')
                     try:
                         try:

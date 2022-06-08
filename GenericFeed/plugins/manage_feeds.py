@@ -9,8 +9,32 @@ from pyrogram.types import (
     InlineKeyboardMarkup,
 )
 from GenericFeed.feed import Feed
-from typing import Union
 from GenericFeed.utils import is_sudoer
+from GenericFeed.config import HELP
+from typing import Union
+
+
+HELP['Manage feeds'] = {
+    'addfeed': (
+        'Add a new feed.\n'
+        'Usage: `/addfeed (url) (name)`\n'
+        'Example: `/addfeed https://www.reddit.com/r/python/ Reddit - Python`\n'
+    ),
+    'removefeed': (
+        'Remove a feed.\n'
+        'Show the list of feeds and select one to remove.\n'
+        'Usage: `/removefeed`\n'
+    ),
+    'listfeeds': (
+        'List all feeds.\n'
+        'Usage: `/listfeeds`\n'
+    ),
+    'clearfeeds': (
+        'Clear the last update of all feeds.\n'
+        'Usage: `/clearfeeds`\n\n'
+        'WARNING: This will clear the last update of all feeds.\n'
+    ),
+}
 
 
 @Client.on_message(filters.command("addfeed") & is_sudoer)  # addfeed <url> <name>
@@ -64,7 +88,7 @@ async def remove_feed(client: Client, message: Message):
     )
 
 
-@Client.on_callback_query(filters.regex("removefeed") & is_sudoer)  # removefeed <id>
+@Client.on_callback_query(filters.regex("^removefeed") & is_sudoer)  # removefeed <id>
 async def remove_feed_callback(client: Client, callback_query: CallbackQuery):
     feed = Feed()
     feed_id = callback_query.data.split("|")[1]
@@ -79,7 +103,7 @@ async def remove_feed_callback(client: Client, callback_query: CallbackQuery):
         return
 
 
-@Client.on_callback_query(filters.regex("listfeeds_back") & is_sudoer)  # addfeed <id>
+@Client.on_callback_query(filters.regex("^listfeeds_back") & is_sudoer)  # addfeed <id>
 @Client.on_message(filters.command("listfeeds") & is_sudoer)  # listfeeds
 async def list_feeds(client: Client, union: Union[Message, CallbackQuery]):
 
@@ -107,7 +131,7 @@ async def list_feeds(client: Client, union: Union[Message, CallbackQuery]):
         await union.message.edit_text("Select a feed to view", reply_markup=markup)
 
 
-@Client.on_callback_query(filters.regex("listfeeds") & is_sudoer)  # listfeeds <id>
+@Client.on_callback_query(filters.regex("^listfeeds") & is_sudoer)  # listfeeds <id>
 async def list_feeds_callback(client: Client, callback_query: CallbackQuery):
     feed = Feed()
     feed_id = callback_query.data.split("|")[1]
