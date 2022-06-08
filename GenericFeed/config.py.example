@@ -20,3 +20,6 @@ FEED_FORMATTER_TEMPLATE: str = """
       
 Via <a href={url}>{feed_title}</a>    
 """
+
+HELP: dict = {}
+
