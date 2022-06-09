@@ -135,3 +135,6 @@ class GenericFeed(Client):
             print(f" [!] Error: {e}")
             print(" [!] Removing chat from DB")
             Chat().remove_chat(chat_id)
+
+        except TimeoutError:
+            await asyncio.sleep(20)
