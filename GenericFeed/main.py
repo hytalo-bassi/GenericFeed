@@ -52,19 +52,15 @@ async def StartFeedLoop(bot: Client):
 
                 feed_item = feedparser.parse(html)
                 for chat in Chat().get_chats():
-                    print(f' [+] Sending to: {chat["chat_name"]} | {chat["chat_id"]}')
+                    print(
+                        f' [✓] Sending to: {chat["chat_name"]} | {chat["chat_id"]}'
+                    )
                     try:
                         await bot.send_feed(chat, feed_item)
                     except MessageTooLong:
                         await bot.send_feed(chat, feed_item, limit=200)
                     except KeyError:
                         print(" [!] Error: KeyError")
-                    #except Exception as e:
-                    #    print(
-                    #        f" [!] Error sending message to {chat['chat_name']} | {chat['chat_id']}"
-                    #    )
-                    #    print(f" [!] Feed URL: {feed_url}")
-                    #    print(f" [!] Error: {e}")
         print("═" * 70)
         await asyncio.sleep(60)
 
@@ -97,7 +93,7 @@ class GenericFeed(Client):
             except AttributeError:
                 text_content = "No description"
         if limit is not None:
-            text_content = text_content[:limit]
+            text_content = text_content[:limit] + "..."
 
         try:
             image_content = last_entry["media_content"][0]["url"]
@@ -107,12 +103,13 @@ class GenericFeed(Client):
             except Exception:
                 print(" [!] Error: No image found")
             image_content = None
-
         formatted_text = FEED_FORMATTER_TEMPLATE.format(
             feed_title=feed_data["feed"]["title"],
             title=last_entry.title,
             url=last_entry.link,
-            summary=text_content,
+            summary=(
+                text_content if len(text_content) >= 0 else "No description."
+            ),
         )
 
         try:

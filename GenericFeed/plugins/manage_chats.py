@@ -31,12 +31,8 @@ HELP["Manage chats"] = {
 @Client.on_message(filters.command(["addchat"]) & is_sudoer)  # addchat
 async def add_chat(client: Client, message: Message):
     chat_manager = Chat()
-    if chat_manager.check_chat(message.chat.id):
-        await message.reply_text("Chat already added")
-        return
-
     split_message = message.text.split(" ")
-    if len(split_message) > 1:
+    if len(split_message) >= 2:
         chat_info = await client.get_chat(split_message[1])
         chat_id = chat_info.id
         chat_name = chat_info.title or chat_info.first_name
@@ -44,8 +40,14 @@ async def add_chat(client: Client, message: Message):
         chat_id = message.chat.id
         chat_name = message.chat.title or message.chat.first_name
 
-    chat_manager.add_chat(chat_id, chat_name)
-    await message.reply_text("Chat added")
+    if chat_manager.check_chat(chat_id):
+        await message.reply_text("Chat already added")
+        return
+
+    if chat_manager.add_chat(chat_id, chat_name):
+        await message.reply_text(
+            f"{chat_name} has been added to the list of managed chats."
+        )
 
 
 @Client.on_message(filters.command(["removechat"]) & is_sudoer)  # removechat
