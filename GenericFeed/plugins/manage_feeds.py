@@ -1,5 +1,5 @@
 # Commands to manage feeds
-import requests
+import aiohttp
 import feedparser
 from pyrogram import Client, filters
 from pyrogram.types import (
@@ -39,6 +39,7 @@ HELP['Manage feeds'] = {
 
 @Client.on_message(filters.command("addfeed") & is_sudoer)  # addfeed <url> <name>
 async def add_feed(client: Client, message: Message):
+    is_valid = False
     feed = Feed()
     split_message = message.text.split(" ")
 
@@ -51,20 +52,30 @@ async def add_feed(client: Client, message: Message):
 
     # Check if feed url works
     try:
-        requests.get(feed_url)
-        feedparser.parse(feed_url).feed
+        async with aiohttp.ClientSession() as session:
+            async with session.get(feed_url) as response:
+                content_type = response.headers['content-type'].split(';')[0]
+        msg = await message.reply_text("Checking feed...")
+        if content_type == 'application/rss+xml':
+            is_valid = True
+        elif content_type == 'application/atom+xml':
+            is_valid = True
+        elif content_type == 'text/xml':
+            is_valid = True
+        elif content_type == 'application/xml':
+            is_valid = True
+        else:
+            await msg.edit_text("Invalid feed.")
+            return
     except Exception as e:
-        await message.reply_text(f"Invalid feed URL\n" f"Error: {e}")
+        await msg.edit_text(f"Invalid feed URL\n" f"Error: {e}")
         return
-    msg = await client.send_message(
-        message.chat.id, "Adding feed: " + feed_name + "\nWith url: " + feed_url
-    )
 
-    success = feed.add_feed(feed_name, feed_url)
-    if success:
-        await msg.edit_text("Feed added successfully!")
-    else:
-        await msg.edit_text("Feed already exists!")
+    if is_valid:
+        await msg.edit("Adding feed...")
+        feed.add_feed(feed_name, feed_url)
+        await msg.edit_text(f"{feed_name} added successfully!")
+        return
 
 
 @Client.on_message(filters.command("removefeed") & is_sudoer)  # removefeed

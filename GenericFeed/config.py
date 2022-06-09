@@ -17,11 +17,11 @@ DEV_LIST: list = []
 DEV_LIST.append(OWNER_ID)
 
 FEED_FORMATTER_TEMPLATE: str = """
-<b>{title}</b>
+**{title}**
 
-<i>{summary}</i>
+__{summary}__
 
-Via <a href={url}>{feed_title}</a>
+Via [{feed_title}]({url})</a>
 """
 
 HELP: dict = {}
