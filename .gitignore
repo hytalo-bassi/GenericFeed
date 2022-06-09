@@ -1,5 +1,4 @@
 # Custom ignore list
-*/config.py
 */*.session*
 venv/
 */__pycache__
