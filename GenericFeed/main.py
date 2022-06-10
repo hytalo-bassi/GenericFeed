@@ -3,12 +3,10 @@ import aiohttp
 import feedparser
 from pyrogram import Client
 from pyrogram.errors import (
-    ChatIdInvalid,
-    PeerIdInvalid,
-    ChannelPrivate,
-    UserIsBlocked,
-    UserIsBot,
-    MessageTooLong,
+    ChatIdInvalid, PeerIdInvalid,
+    ChannelPrivate, UserIsBlocked,
+    UserIsBot, MessageTooLong,
+    MediaCaptionTooLong
 )
 
 from GenericFeed.config import (
@@ -20,6 +18,7 @@ from GenericFeed.config import (
 from GenericFeed.feed import Feed
 from GenericFeed.chat import Chat
 from GenericFeed.loop import LoopController
+from bs4 import BeautifulSoup as bs
 
 
 async def StartFeedLoop(bot: Client):
@@ -57,7 +56,7 @@ async def StartFeedLoop(bot: Client):
                     )
                     try:
                         await bot.send_feed(chat, feed_item)
-                    except MessageTooLong:
+                    except (MessageTooLong, MediaCaptionTooLong):
                         await bot.send_feed(chat, feed_item, limit=200)
                     except KeyError:
                         print(" [!] Error: KeyError")
@@ -93,8 +92,11 @@ class GenericFeed(Client):
             except AttributeError:
                 text_content = "No description"
         if limit is not None:
+            print(" [!] Feed limited to: {}".format(limit))
             text_content = text_content[:limit] + "..."
 
+        text_content = bs(text_content, "lxml").text # Remove HTML tags
+        print(f" [✓] Text content: {text_content}")
         try:
             image_content = last_entry["media_content"][0]["url"]
         except Exception:
