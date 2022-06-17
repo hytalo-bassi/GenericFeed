@@ -1,11 +1,17 @@
+import asyncio
+import logging
+
+import aiohttp
+import feedparser
+from pyrogram import Client
+from pyrogram.errors import MediaCaptionTooLong, MessageTooLong
+
+from GenericFeed.chat import Chat
 from GenericFeed.feed import Feed
 from GenericFeed.loop import LoopController
-import logging
-from pyrogram import Client
-import asyncio
-import aiohttp
 
-async def StartFeedLoop(bot: Client):
+
+async def start_feed_loop(bot: Client):
     feed = Feed()
     loop = LoopController()
     while True:
@@ -36,5 +42,5 @@ async def StartFeedLoop(bot: Client):
                     except (MessageTooLong, MediaCaptionTooLong):
                         await bot.send_feed(chat, feed_item, limit=200)
                     except KeyError as err:
-                        logging.error("KeyError: %s" % err)
+                        logging.error(f"KeyError: {err}")
         await asyncio.sleep(60)

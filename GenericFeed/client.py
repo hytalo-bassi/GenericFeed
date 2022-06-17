@@ -1,18 +1,21 @@
 import asyncio
-from pyrogram import Client
-from GenericFeed.config import FEED_FORMATTER_TEMPLATE
-from GenericFeed.chat import Chat
 import logging
+
 from bs4 import BeautifulSoup as bs
+from pyrogram import Client
 from pyrogram.errors import (
-    ChatIdInvalid, PeerIdInvalid,
-    ChannelPrivate, UserIsBlocked,
-    UserIsBot, MessageTooLong,
-    MediaCaptionTooLong
+    ChannelPrivate,
+    ChatIdInvalid,
+    PeerIdInvalid,
+    UserIsBlocked,
+    UserIsBot,
 )
 
+from GenericFeed.chat import Chat
+from GenericFeed.config import FEED_FORMATTER_TEMPLATE
 
-class GenericFeed(Client):
+
+class GenericFeed(Client): # pylint: disable=too-many-ancestors
     def __init__(self, API_ID, API_HASH, BOT_TOKEN, workers: int = 4):
         super().__init__(
             "GenericFeed",
@@ -38,16 +41,16 @@ class GenericFeed(Client):
                 text_content = "No description"
 
         if limit is not None:
-            logging.info("Feed limited to %d" % limit)
+            logging.info(f"Feed limited to {limit}")
             text_content = text_content[:limit] + "..."
 
-        text_content = bs(text_content, "lxml").text # Remove HTML tags
+        text_content = bs(text_content, "lxml").text  # Remove HTML tags
         try:
             image_content = last_entry["media_content"][0]["url"]
 
         except Exception:
             try:
-                image_content = last_entry['image']
+                image_content = last_entry["image"]
             except Exception:
                 logging.error("Can not load image")
             image_content = None
@@ -56,9 +59,7 @@ class GenericFeed(Client):
             feed_title=feed_data["feed"]["title"],
             title=last_entry.title,
             url=last_entry.link,
-            summary=(
-                text_content if len(text_content) >= 0 else "No description."
-            ),
+            summary=(text_content if len(text_content) >= 0 else "No description."),
         )
 
         try:
@@ -78,8 +79,9 @@ class GenericFeed(Client):
             PeerIdInvalid,
             ChannelPrivate,
             UserIsBlocked,
-            UserIsBot) as e:
-            logging.error("Can not send message to %d, removing fromn DB. Error: %s" % (chat_id, e))
+            UserIsBot,
+        ) as err:
+            logging.error(f"Can not send message to {chat_id}, removing fromn DB. Error: {err}")
             Chat().remove_chat(chat_id)
 
         except TimeoutError:

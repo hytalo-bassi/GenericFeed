@@ -1,38 +1,36 @@
 # Commands to manage feeds
+from typing import Union
+
 import aiohttp
 import feedparser
 from pyrogram import Client, filters
 from pyrogram.types import (
-    Message,
     CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    Message,
 )
+
+from GenericFeed.config import HELP
 from GenericFeed.feed import Feed
 from GenericFeed.utils import is_sudoer
-from GenericFeed.config import HELP
-from typing import Union
 
-
-HELP['Manage feeds'] = {
-    'addfeed': (
-        'Add a new feed.\n'
-        'Usage: `/addfeed (url) (name)`\n'
-        'Example: `/addfeed https://www.reddit.com/r/python/ Reddit - Python`\n'
+HELP["Manage feeds"] = {
+    "addfeed": (
+        "Add a new feed.\n"
+        "Usage: `/addfeed (url) (name)`\n"
+        "Example: `/addfeed https://www.reddit.com/r/python/ Reddit - Python`\n"
     ),
-    'removefeed': (
-        'Remove a feed.\n'
-        'Show the list of feeds and select one to remove.\n'
-        'Usage: `/removefeed`\n'
+    "removefeed": (
+        "Remove a feed.\n"
+        "Show the list of feeds and select one to remove.\n"
+        "Usage: `/removefeed`\n"
     ),
-    'listfeeds': (
-        'List all feeds.\n'
-        'Usage: `/listfeeds`\n'
-    ),
-    'clearfeeds': (
-        'Clear the last update of all feeds.\n'
-        'Usage: `/clearfeeds`\n\n'
-        'WARNING: This will clear the last update of all feeds.\n'
+    "listfeeds": ("List all feeds.\n" "Usage: `/listfeeds`\n"),
+    "clearfeeds": (
+        "Clear the last update of all feeds.\n"
+        "Usage: `/clearfeeds`\n\n"
+        "WARNING: This will clear the last update of all feeds.\n"
     ),
 }
 
@@ -54,15 +52,15 @@ async def add_feed(client: Client, message: Message):
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(feed_url) as response:
-                content_type = response.headers['content-type'].split(';')[0]
+                content_type = response.headers["content-type"].split(";")[0]
         msg = await message.reply_text("Checking feed...")
-        if content_type == 'application/rss+xml':
+        if content_type == "application/rss+xml":
             is_valid = True
-        elif content_type == 'application/atom+xml':
+        elif content_type == "application/atom+xml":
             is_valid = True
-        elif content_type == 'text/xml':
+        elif content_type == "text/xml":
             is_valid = True
-        elif content_type == 'application/xml':
+        elif content_type == "application/xml":
             is_valid = True
         else:
             await msg.edit_text("Invalid feed.")

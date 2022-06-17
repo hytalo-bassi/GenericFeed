@@ -1,18 +1,18 @@
-from GenericFeed.client import GenericFeed
-from GenericFeed.config import API_ID, API_HASH, BOT_TOKEN
-from GenericFeed.feed_loop import StartFeedLoop
-import asyncio
-import logging
 import datetime
+import logging
 from os import path
+
+from GenericFeed.client import GenericFeed
+from GenericFeed.config import API_HASH, API_ID, BOT_TOKEN
+from GenericFeed.feed_loop import start_feed_loop
 
 app = GenericFeed(API_ID, API_HASH, BOT_TOKEN)
 LOGDIR = "logs"
 
+
 async def main():
     await app.start()
-    await StartFeedLoop(app)
-
+    await start_feed_loop(app)
 
 
 def log_file():
@@ -26,9 +26,9 @@ if not path.exists(LOGDIR):
     path.mkdir(LOGDIR)
 
 
-logging.basicConfig(filename = log_file(),
-                    level = logging.DEBUG,
-                    format='%(asctime)s %(message)s')
+logging.basicConfig(
+    filename=log_file(), level=logging.DEBUG, format="%(asctime)s %(message)s"
+)
 
 if __name__ == "__main__":
     app.run(main())

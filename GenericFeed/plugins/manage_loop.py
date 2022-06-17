@@ -1,14 +1,11 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from GenericFeed.loop import LoopController
 from GenericFeed.config import HELP
+from GenericFeed.loop import LoopController
 
-HELP['Manage loop'] = {
-    'loop': (
-        'Manage the loop of the bot.\n'
-        'Usage: `/loop (start|stop|status)`\n'
-    ),
+HELP["Manage loop"] = {
+    "loop": ("Manage the loop of the bot.\n" "Usage: `/loop (start|stop|status)`\n"),
 }
 
 
@@ -26,11 +23,9 @@ async def loop_command(client: Client, message: Message):
             await message.reply_text("Loop disabled")
         elif args[1] == "status":
             await message.reply_text(
-                "Loop is " + (
-                    "enabled" if loop.get_loop_status() else "disabled"
-                )
+                "Loop is " + ("enabled" if loop.get_loop_status() else "disabled")
             )
         else:
-            await message.reply_text(HELP['Manage loop']['loop'])
+            await message.reply_text(HELP["Manage loop"]["loop"])
     else:
-        await message.reply_text(HELP['Manage loop']['loop'])
+        await message.reply_text(HELP["Manage loop"]["loop"])

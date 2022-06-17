@@ -28,5 +28,3 @@ class Chat:
 
     def get_chat(self, chat_id):
         return self.chat.find_one({"chat_id": chat_id})
-
-

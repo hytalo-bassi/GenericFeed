@@ -1,30 +1,31 @@
+from typing import Union
+
 from pyrogram import Client, filters
 from pyrogram.types import (
-    Message,
     CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    Message,
 )
-from typing import Union
+
 from GenericFeed.chat import Chat
-from GenericFeed.utils import is_sudoer
 from GenericFeed.config import HELP
+from GenericFeed.utils import is_sudoer
 
 HELP["Manage chats"] = {
-    'addchat': (
-        "Add a chat to the list of managed chats.\n"
-        "Usage: `/addchat (chat_id)?`\n"
+    "addchat": (
+        "Add a chat to the list of managed chats.\n" "Usage: `/addchat (chat_id)?`\n"
     ),
-    'removechat': (
+    "removechat": (
         "Remove a chat from the list of managed chats.\n"
         "Send a message to the chat to remove it from the list of managed chats.\n"
         "Usage: `/removechat`\n"
     ),
-    'listchats': (
+    "listchats": (
         "List all managed chats.\n"
         "Send the list of managed chats to the chat.\n"
         "Usage: `/listchats`\n"
-    )
+    ),
 }
 
 
@@ -70,7 +71,9 @@ async def remove_chat(client: Client, message: Message):
     await message.reply_text("Select chat to remove", reply_markup=reply_markup)
 
 
-@Client.on_callback_query(filters.regex("^listchats_back") & is_sudoer)  # listchats_back
+@Client.on_callback_query(
+    filters.regex("^listchats_back") & is_sudoer
+)  # listchats_back
 @Client.on_message(filters.command(["listchats"]) & is_sudoer)  # listchats
 async def list_chats(client: Client, union: Union[Message, CallbackQuery]):
     chat_manager = Chat()
