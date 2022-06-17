@@ -9,8 +9,7 @@ class Chat:
     def check_chat(self, chat_id):
         if self.chat.find_one({"chat_id": chat_id}):
             return True
-        else:
-            return False
+        return False
 
     def add_chat(self, chat_id, chat_name):
         if self.check_chat(chat_id):
@@ -21,7 +20,6 @@ class Chat:
     def remove_chat(self, chat_id: int):
         if not self.check_chat(chat_id):
             return False
-        print("Debug value: Removing chat with id: " + str(chat_id))
         self.chat.delete_one({"chat_id": chat_id})
         return True
 
@@ -30,3 +28,5 @@ class Chat:
 
     def get_chat(self, chat_id):
         return self.chat.find_one({"chat_id": chat_id})
+
+

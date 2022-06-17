@@ -5,7 +5,6 @@ from pyrogram.types import (
 from GenericFeed.config import HELP
 from typing import Union
 
-
 @Client.on_callback_query(filters.regex(r"help_back"))
 @Client.on_message(filters.command("help"))
 async def help(client: Client, union: Union[Message, CallbackQuery]):

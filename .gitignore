@@ -3,6 +3,7 @@
 venv/
 */__pycache__
 */*/__pycache__
+*/logs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

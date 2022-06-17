@@ -10,7 +10,7 @@ def is_sudoer(_, union: Union[Message, CallbackQuery]) -> bool:
     return union.from_user.id in DEV_LIST
 
 if (MONGODB_URI is None):
-    print("The environment variable MONGODB_URI is not defined!")
+    logging.error("The environment variable MONGODB_URI is not defined")
     exit(1)
 
 db = MongoClient(MONGODB_URI).generic_feed
