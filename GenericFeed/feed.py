@@ -1,14 +1,11 @@
 import feedparser
-from pymongo import MongoClient
 from bson.objectid import ObjectId
-from GenericFeed.config import MONGODB_URI
+from GenericFeed.utils import db
 
 
 class Feed:
     def __init__(self):
-        self.client = MongoClient(MONGODB_URI)
-        self.db = self.client.get_database("generic_feed")
-        self.collection = self.db.get_collection("feed")
+        self.collection = db.get_collection("feed")
 
     def check_feed(self, url):
         if self.collection.find_one({"url": url}):
