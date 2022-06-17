@@ -7,7 +7,7 @@ services:
     env_file:
       - .env
     environment:
-      - MONGODB_URI=mongodb://root:example@mongo:27017/generic_feed
+      - MONGODB_URI=mongodb://root:example@mongo:27017
     restart: "on-failure"
     links:
       - mongo
