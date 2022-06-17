@@ -1,13 +1,10 @@
 # Chat manager for the GenericFeed bot
-from GenericFeed.config import MONGODB_URI
-from pymongo import MongoClient
+from GenericFeed.utils import db
 
 
 class Chat:
     def __init__(self):
-        self.client = MongoClient(MONGODB_URI)
-        self.db = self.client.get_database("generic_feed")
-        self.chat = self.db.chat
+        self.chat = db.chat
 
     def check_chat(self, chat_id):
         if self.chat.find_one({"chat_id": chat_id}):
